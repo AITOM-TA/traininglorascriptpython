@@ -34,23 +34,18 @@ RUN pip install --upgrade pip && \
       huggingface_hub \
       oxenai
 
-# --- Pré-télécharger les modèles FLUX.1-dev dans le cache HF ---
-# On télécharge ici pour que l'image soit déjà "warm"
 RUN python - << "EOF"
 from diffusers import FluxTransformer2DModel, AutoencoderKL, FluxPipeline
 from transformers import CLIPTextModel, CLIPTokenizer, T5TokenizerFast, T5EncoderModel
 
 model_name = "black-forest-labs/FLUX.1-dev"
 
-# Télécharge les sous-modèles nécessaires (ça va dans HF_HOME)
 FluxTransformer2DModel.from_pretrained(model_name, subfolder="transformer")
 AutoencoderKL.from_pretrained(model_name, subfolder="vae")
 CLIPTextModel.from_pretrained(model_name, subfolder="text_encoder")
 T5EncoderModel.from_pretrained(model_name, subfolder="text_encoder_2")
 CLIPTokenizer.from_pretrained(model_name, subfolder="tokenizer")
 T5TokenizerFast.from_pretrained(model_name, subfolder="tokenizer_2")
-
-# Optionnel : pipeline complet pour être sûr que tout est OK
 FluxPipeline.from_pretrained(model_name)
 EOF
 
