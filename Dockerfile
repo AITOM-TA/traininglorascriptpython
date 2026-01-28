@@ -13,7 +13,7 @@ RUN ln -s /usr/bin/python3 /usr/bin/python
 
 WORKDIR /workspace
 
-# --- Python deps pour ton script de training FLUX LoRA ---
+# Dépendances Python pour le training FLUX LoRA
 RUN pip install --upgrade pip && \
     pip install \
       torch --index-url https://download.pytorch.org/whl/cu121 && \
@@ -34,19 +34,7 @@ RUN pip install --upgrade pip && \
       huggingface_hub \
       oxenai
 
-RUN python - << "EOF"
-from diffusers import FluxTransformer2DModel, AutoencoderKL, FluxPipeline
-from transformers import CLIPTextModel, CLIPTokenizer, T5TokenizerFast, T5EncoderModel
-
-model_name = "black-forest-labs/FLUX.1-dev"
-
-FluxTransformer2DModel.from_pretrained(model_name, subfolder="transformer")
-AutoencoderKL.from_pretrained(model_name, subfolder="vae")
-CLIPTextModel.from_pretrained(model_name, subfolder="text_encoder")
-T5EncoderModel.from_pretrained(model_name, subfolder="text_encoder_2")
-CLIPTokenizer.from_pretrained(model_name, subfolder="tokenizer")
-T5TokenizerFast.from_pretrained(model_name, subfolder="tokenizer_2")
-FluxPipeline.from_pretrained(model_name)
-EOF
+# (optionnel) tu pré-téléchargeras le modèle plus tard via un script dans le container,
+# mais ici on enlève totalement le heredoc qui pose problème.
 
 CMD ["bash"]
