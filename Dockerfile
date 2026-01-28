@@ -32,9 +32,13 @@ RUN pip install --upgrade pip && \
       marimo \
       typer \
       huggingface_hub \
-      oxenai
+      oxenai \
+      runpod \
+      requests \
+      peft
 
-# (optionnel) tu pré-téléchargeras le modèle plus tard via un script dans le container,
-# mais ici on enlève totalement le heredoc qui pose problème.
+# Copier le handler.py dans le conteneur
+COPY handler.py /workspace/handler.py
 
-CMD ["bash"]
+# Point d'entrée - exécuter handler.py qui démarre le serveur RunPod
+CMD ["python3", "handler.py"]
