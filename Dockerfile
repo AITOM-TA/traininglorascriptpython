@@ -54,5 +54,4 @@ T5TokenizerFast.from_pretrained(model_name, subfolder="tokenizer_2")
 FluxPipeline.from_pretrained(model_name)
 EOF
 
-# L'image n'embarque PAS ton code, tu le montes / fournis via serverless
 CMD ["bash"]
