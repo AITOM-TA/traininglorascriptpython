@@ -5,47 +5,54 @@ ENV DEBIAN_FRONTEND=noninteractive \
     HF_HOME=/root/.cache/huggingface \
     PIP_NO_CACHE_DIR=1
 
-# System deps
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3 python3-pip python3-venv git wget curl ca-certificates \
-    libglib2.0-0 libsm6 libxrender1 libxext6 \
+    python3 python3-pip git ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# Symlink python -> python3
 RUN ln -s /usr/bin/python3 /usr/bin/python
 
 WORKDIR /workspace
 
-# Requirements (tu peux les mettre dans requirements.txt si tu préfères)
-RUN pip install --upgrade pip
+# --- Python deps pour ton script de training FLUX LoRA ---
+RUN pip install --upgrade pip && \
+    pip install \
+      torch --index-url https://download.pytorch.org/whl/cu121 && \
+    pip install \
+      torchvision \
+      diffusers[torch] \
+      transformers \
+      accelerate \
+      safetensors \
+      bitsandbytes \
+      einops \
+      pillow \
+      pandas \
+      pyarrow \
+      tqdm \
+      marimo \
+      typer \
+      huggingface_hub \
+      oxenai
 
-RUN pip install \
-    torch --index-url https://download.pytorch.org/whl/cu121 \
-    torchvision \
-    --extra-index-url https://download.pytorch.org/whl/cu121
+# --- Pré-télécharger les modèles FLUX.1-dev dans le cache HF ---
+# On télécharge ici pour que l'image soit déjà "warm"
+RUN python - << "EOF"
+from diffusers import FluxTransformer2DModel, AutoencoderKL, FluxPipeline
+from transformers import CLIPTextModel, CLIPTokenizer, T5TokenizerFast, T5EncoderModel
 
-RUN pip install \
-    diffusers[torch] \
-    transformers \
-    accelerate \
-    safetensors \
-    bitsandbytes \
-    einops \
-    pillow \
-    pandas \
-    pyarrow \
-    tqdm \
-    marimo \
-    typer \
-    oxenai \
-    huggingface_hub
+model_name = "black-forest-labs/FLUX.1-dev"
 
-# Copie ton script (renomme-le si besoin)
-COPY train.py /workspace/train.py
+# Télécharge les sous-modèles nécessaires (ça va dans HF_HOME)
+_ = FluxTransformer2DModel.from_pretrained(model_name, subfolder="transformer")
+_ = AutoencoderKL.from_pretrained(model_name, subfolder="vae")
+_ = CLIPTextModel.from_pretrained(model_name, subfolder="text_encoder")
+_ = T5EncoderModel.from_pretrained(model_name, subfolder="text_encoder_2")
+_ = CLIPTokenizer.from_pretrained(model_name, subfolder="tokenizer")
+_ = T5TokenizerFast.from_pretrained(model_name, subfolder="tokenizer_2")
 
-# Port facultatif si tu veux exposer marimo (UI web)
-EXPOSE 8080
+# Optionnel : pipeline complet pour être sûr que tout est OK
+_ = FluxPipeline.from_pretrained(model_name)
+EOF
 
-# Run le script en mode CLI
-# Pour utiliser marimo en mode app web, change la CMD en conséquence.
-CMD ["python", "train.py"]
+# L'image n'embarque PAS ton code, tu le montes / fournis via serverless
+CMD ["bash"]
