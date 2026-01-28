@@ -43,15 +43,15 @@ from transformers import CLIPTextModel, CLIPTokenizer, T5TokenizerFast, T5Encode
 model_name = "black-forest-labs/FLUX.1-dev"
 
 # Télécharge les sous-modèles nécessaires (ça va dans HF_HOME)
-_ = FluxTransformer2DModel.from_pretrained(model_name, subfolder="transformer")
-_ = AutoencoderKL.from_pretrained(model_name, subfolder="vae")
-_ = CLIPTextModel.from_pretrained(model_name, subfolder="text_encoder")
-_ = T5EncoderModel.from_pretrained(model_name, subfolder="text_encoder_2")
-_ = CLIPTokenizer.from_pretrained(model_name, subfolder="tokenizer")
-_ = T5TokenizerFast.from_pretrained(model_name, subfolder="tokenizer_2")
+FluxTransformer2DModel.from_pretrained(model_name, subfolder="transformer")
+AutoencoderKL.from_pretrained(model_name, subfolder="vae")
+CLIPTextModel.from_pretrained(model_name, subfolder="text_encoder")
+T5EncoderModel.from_pretrained(model_name, subfolder="text_encoder_2")
+CLIPTokenizer.from_pretrained(model_name, subfolder="tokenizer")
+T5TokenizerFast.from_pretrained(model_name, subfolder="tokenizer_2")
 
 # Optionnel : pipeline complet pour être sûr que tout est OK
-_ = FluxPipeline.from_pretrained(model_name)
+FluxPipeline.from_pretrained(model_name)
 EOF
 
 # L'image n'embarque PAS ton code, tu le montes / fournis via serverless
